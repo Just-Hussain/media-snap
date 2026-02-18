@@ -26,22 +26,32 @@ async def extract_screenshot(
     """
     Extract a single frame from a media file at the given timestamp.
 
-    Uses input-level seeking (-ss before -i) for near-instant keyframe seek,
-    then decodes one frame from that point for an accurate result.
+    Uses a two-pass seek for frame-accurate extraction:
+    1. Coarse input-level seek (-ss before -i) with -noaccurate_seek to jump
+       to the nearest keyframe ~5s before the target (fast demuxer seek).
+    2. Fine output-level seek (-ss after -i) to decode forward to the exact
+       frame using PTS ordering, avoiding B-frame reordering inaccuracies.
     """
-    ts = _seconds_to_timecode(timestamp_seconds)
+    SEEK_BUFFER = 5.0
+    coarse = max(0.0, timestamp_seconds - SEEK_BUFFER)
+    fine = timestamp_seconds - coarse
+
+    ts_coarse = _seconds_to_timecode(coarse)
+    ts_fine = _seconds_to_timecode(fine)
 
     cmd = [
         settings.ffmpeg_path,
-        "-ss", ts,                     # seek to timestamp (input-level = fast)
+        "-noaccurate_seek",            # keyframe-only jump (skip DTS decode-forward)
+        "-ss", ts_coarse,              # coarse: land near target
         "-i", media_path,              # input file
+        "-ss", ts_fine,                # fine: decode to exact frame via PTS
         "-frames:v", "1",              # extract exactly 1 frame
         "-q:v", str(settings.screenshot_quality),  # JPEG quality
         "-y",                          # overwrite output
         output_path,
     ]
 
-    logger.info("FFmpeg screenshot: %s @ %s -> %s", media_path, ts, output_path)
+    logger.info("FFmpeg screenshot: %s @ coarse=%s fine=%s -> %s", media_path, ts_coarse, ts_fine, output_path)
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
