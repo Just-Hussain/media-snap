@@ -7,7 +7,7 @@ MediaSnap is a self-hosted web tool that runs alongside Plex and Jellyfin on a h
 ## How it works (high level)
 
 1. The backend polls the Plex and Jellyfin APIs every few seconds to discover what's currently playing.
-2. The web UI shows active sessions with a "Screenshot" button (and eventually a "Clip" button).
+2. The web UI shows active sessions with "Screenshot" and "Clip" buttons.
 3. On capture, the backend resolves the media file's absolute path on disk (reported by the media server API), calculates the playback timestamp, and invokes FFmpeg directly on the source file.
 4. The result is saved to a local captures directory and tracked in a SQLite database.
 5. The user can browse, download, and delete captures from a gallery view.
@@ -74,7 +74,7 @@ mediasnap/
 | GET | `/api/health` | Health check | Done |
 | GET | `/api/sessions` | List active playback sessions (Plex + Jellyfin merged) | Done |
 | POST | `/api/capture/screenshot` | Take screenshot of a session at current timestamp | Done |
-| POST | `/api/capture/clip` | Extract video clip (runs as background task) | Code exists, UI not built |
+| POST | `/api/capture/clip` | Extract video clip (runs as background task) | Done |
 | GET | `/api/captures` | List all captures (paginated, filterable by type) | Done |
 | GET | `/api/captures/{id}` | Get single capture metadata | Done |
 | GET | `/api/captures/{id}/file` | Download capture file | Done |
@@ -256,28 +256,24 @@ In production, FastAPI serves the built frontend as static files from `frontend/
 
 ## Current state and what's done
 
-### Complete (Phase 1 — Screenshot MVP)
+### Complete (Phase 1 — Screenshot MVP + Phase 2 — Clip Extraction UI)
 - FastAPI backend with all core services
 - Plex session fetching and normalization (XML parsing)
 - Jellyfin session fetching and normalization (JSON)
 - Unified session manager with concurrent polling and in-memory cache
 - FFmpeg screenshot extraction (input-level seeking, < 1s)
+- FFmpeg clip extraction with fast (stream copy) and precise (re-encode) modes
+- Clip extraction runs as a FastAPI `BackgroundTasks` job
 - SQLite capture persistence
-- Full CRUD API for captures (create screenshot, list, get, download, delete)
+- Full CRUD API for captures (create screenshot, create clip, list, get, download, delete)
 - Thumbnail proxy for both Plex and Jellyfin (no credentials leaked to client)
-- React frontend with Now Playing view (session cards, thumbnails, progress bars, screenshot button)
-- React gallery view with download/delete
+- React frontend with Now Playing view (session cards, thumbnails, progress bars, screenshot + clip buttons)
+- Clip form on session cards with duration presets (10s/30s/60s/2m/5m) and precise mode toggle
+- React gallery view with download/delete and distinct pending/failed/complete clip states
+- Pending-clip polling (3-second interval, auto-stops when no pending captures)
 - Session polling every 5 seconds
 - Docker multi-stage build
 - docker-compose deployment config
-
-### Code exists but UI not built (Phase 2 — Clips)
-- `POST /api/capture/clip` endpoint is implemented in `routers/captures.py`
-- `extract_clip()` function exists in `services/ffmpeg.py` with both fast (stream copy) and precise (re-encode) modes
-- Clip extraction runs as a FastAPI `BackgroundTasks` job
-- `ClipRequest` model exists in `models.py`
-- `api.takeClip()` exists in the frontend API client (`api.ts`)
-- **Missing:** UI for triggering clips (time range input form on session cards), clip status polling in the gallery for pending clips
 
 ### Not started (Phase 3 — Polish)
 - Share link generation (short-lived public URLs)
@@ -331,6 +327,5 @@ docker compose up -d --build
 1. **Path mapping is critical.** The media file paths reported by Plex/Jellyfin must be accessible at the same absolute path inside the MediaSnap container. If Plex reports a file at `/data/media/Movies/film.mkv`, then MediaSnap must see it at exactly `/data/media/Movies/film.mkv`. The Docker volume mount must match accordingly.
 2. **Session cache is ephemeral.** If the backend restarts, the session cache is empty until the next `GET /api/sessions` call (triggered by frontend polling). Any in-flight capture requests against stale session IDs will 404.
 3. **No auth on the web UI.** Anyone on the network can take screenshots and browse the gallery. Acceptable for a home network, not suitable for public exposure.
-4. **Clip status polling is not implemented in the UI.** The backend sets clip status to `pending` then `complete`/`failed` via background task, but the frontend gallery does not poll for status updates on pending clips yet.
-5. **React 19 type strictness.** `useRef()` with no argument causes `TS2554`. Always provide an initial value: `useRef<T | undefined>(undefined)`.
+4. **React 19 type strictness.** `useRef()` with no argument causes `TS2554`. Always provide an initial value: `useRef<T | undefined>(undefined)`.
 6. **Empty `__init__.py` files required.** `backend/routers/__init__.py` and `backend/services/__init__.py` must exist (can be empty) for Python to treat them as packages.

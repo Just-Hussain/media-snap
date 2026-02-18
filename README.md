@@ -32,7 +32,7 @@ docker compose up -d --build
 
 **4. Open** `http://your-server:8787` in a browser.
 
-Start playing something on Plex or Jellyfin and it will appear in the Now Playing view. Tap Screenshot to capture the current frame.
+Start playing something on Plex or Jellyfin and it will appear in the Now Playing view. Tap Screenshot to capture the current frame, or tap Clip to extract a video clip of the last 10s–5m.
 
 ## Quick Start (Local Development)
 
@@ -136,5 +136,5 @@ Full API documentation is available at `http://your-server:8787/docs` (auto-gene
 
 - [x] Phase 1: Screenshots from active playback sessions
 - [x] Thumbnail proxy (no internal IPs or credentials leaked to client)
-- [ ] Phase 2: Video clip extraction UI (backend done, frontend pending)
+- [x] Phase 2: Video clip extraction UI
 - [ ] Phase 3: Share links, auto-cleanup, Discord webhooks, subtitle burn-in
