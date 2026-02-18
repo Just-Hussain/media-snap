@@ -17,8 +17,8 @@ services:
       # - JELLYFIN_URL=http://localhost:8096
       # - JELLYFIN_API_KEY=your-jellyfin-api-key-here
       # ── Storage ──
-      - CAPTURE_DIR=/config/captures
-      - DB_PATH=/config/mediasnap.db
+      - CAPTURE_DIR=/appdata/captures
+      - DB_PATH=/appdata/mediasnap.db
     restart: unless-stopped
     networks:
       - hussnet
