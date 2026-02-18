@@ -62,7 +62,7 @@ mediasnap/
 │       ├── main.tsx          # React DOM createRoot
 │       ├── App.tsx           # Main component: tabs, session cards, gallery
 │       └── api.ts            # Typed fetch wrapper + all API call functions
-└── data/                     # Runtime directory (gitignored)
+└── appdata/                     # Runtime directory (gitignored)
     ├── captures/             # Screenshot JPEGs and clip MP4s
     └── mediasnap.db          # SQLite database
 ```
@@ -226,8 +226,8 @@ All config is via environment variables (or `.env` file), handled by `pydantic-s
 | `PLEX_TOKEN` | `""` | Plex authentication token. Never exposed to the client. |
 | `JELLYFIN_URL` | `""` | Jellyfin server URL (e.g., `http://172.17.0.1:8096`). Leave blank to disable. |
 | `JELLYFIN_API_KEY` | `""` | Jellyfin API key. Never exposed to the client. |
-| `CAPTURE_DIR` | `/data/captures` | Directory for saved screenshots and clips. |
-| `DB_PATH` | `/data/mediasnap.db` | SQLite database file path. |
+| `CAPTURE_DIR` | `/appdata/captures` | Directory for saved screenshots and clips. |
+| `DB_PATH` | `/appdata/mediasnap.db` | SQLite database file path. |
 | `FFMPEG_PATH` | `ffmpeg` | Path to FFmpeg binary. |
 | `SCREENSHOT_QUALITY` | `2` | FFmpeg `-q:v` value (1=best, 31=worst). |
 | `HOST` | `0.0.0.0` | Server bind host. |

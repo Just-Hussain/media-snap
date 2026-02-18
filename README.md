@@ -49,8 +49,8 @@ PLEX_URL=http://localhost:32400
 PLEX_TOKEN=your-plex-token
 JELLYFIN_URL=http://localhost:8096
 JELLYFIN_API_KEY=your-jellyfin-key
-CAPTURE_DIR=../data/captures
-DB_PATH=../data/mediasnap.db
+CAPTURE_DIR=../appdata/captures
+DB_PATH=../appdata/mediasnap.db
 ```
 
 ```bash
@@ -116,7 +116,7 @@ mediasnap/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── CONTEXT.md               # Full technical context for AI-assisted development
-└── data/                    # Runtime: captures + SQLite DB
+└── appdata/                 # Runtime: captures + SQLite DB
 ```
 
 ## API
