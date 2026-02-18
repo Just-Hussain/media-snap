@@ -36,7 +36,6 @@ function SessionCard({
   const [flash, setFlash] = useState(false);
   const [clipOpen, setClipOpen] = useState(false);
   const [clipDuration, setClipDuration] = useState(30);
-  const [clipPrecise, setClipPrecise] = useState(false);
   const [clipLoading, setClipLoading] = useState(false);
   const [clipError, setClipError] = useState("");
 
@@ -62,7 +61,6 @@ function SessionCard({
       const c = await api.takeClip({
         session_id: session.session_id,
         relative_seconds: -clipDuration,
-        precise: clipPrecise,
       });
       onCapture(c);
       setClipOpen(false);
@@ -218,26 +216,6 @@ function SessionCard({
                 </button>
               ))}
             </div>
-
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontSize: 13,
-                color: "#ccc",
-                marginBottom: 10,
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={clipPrecise}
-                onChange={(e) => setClipPrecise(e.target.checked)}
-              />
-              Precise mode{" "}
-              <span style={{ color: "#888" }}>(slower, frame-accurate)</span>
-            </label>
 
             <button
               onClick={handleClip}

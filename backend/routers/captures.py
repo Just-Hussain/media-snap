@@ -102,12 +102,12 @@ async def take_screenshot(req: ScreenshotRequest):
 
 async def _process_clip(
     capture_id: str, media_path: str, start: float,
-    duration: float, output_path: str, precise: bool,
+    duration: float, output_path: str,
 ):
     """Background task for clip extraction."""
     db = await get_db()
     try:
-        await extract_clip(media_path, start, duration, output_path, precise)
+        await extract_clip(media_path, start, duration, output_path)
         file_size = os.path.getsize(output_path)
         await db.execute(
             "UPDATE captures SET status='complete', file_size_bytes=? WHERE id=?",
@@ -175,7 +175,7 @@ async def take_clip(req: ClipRequest, bg: BackgroundTasks):
 
     bg.add_task(
         _process_clip, capture_id, session.media_path,
-        start, duration, output_path, req.precise,
+        start, duration, output_path,
     )
 
     return Capture(

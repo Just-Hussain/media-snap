@@ -108,10 +108,10 @@ Note: `thumbnail_url` is always a relative proxy path. Credentials are never exp
 
 **POST /api/capture/clip** expects one of:
 ```json
-{ "session_id": "plex-abc123", "relative_seconds": -30, "precise": false }
-{ "session_id": "plex-abc123", "start_seconds": 100, "end_seconds": 130, "precise": true }
+{ "session_id": "plex-abc123", "relative_seconds": -30 }
+{ "session_id": "plex-abc123", "start_seconds": 100, "end_seconds": 130 }
 ```
-`relative_seconds` is negative to mean "last N seconds from current position". `precise: true` re-encodes for frame-accurate cuts (slower); `false` uses stream copy (fast, keyframe-snapped).
+`relative_seconds` is negative to mean "last N seconds from current position". Clips use stream copy (fast, keyframe-snapped).
 
 **Capture response shape** (returned by all capture endpoints and gallery):
 ```json
@@ -181,14 +181,9 @@ ffmpeg -ss {HH:MM:SS.mmm} -i {media_path} -frames:v 1 -q:v 2 -y {output}.jpg
 ```
 `-ss` before `-i` = input-level seeking (fast keyframe seek). `-q:v 2` = high quality JPEG.
 
-**Clip — fast mode** (stream copy, near-instant, keyframe-snapped):
+**Clip** (stream copy, near-instant, keyframe-snapped):
 ```bash
 ffmpeg -ss {start} -i {media_path} -t {duration} -c copy -avoid_negative_ts make_zero -movflags +faststart -y {output}.mp4
-```
-
-**Clip — precise mode** (re-encode, slower, frame-accurate):
-```bash
-ffmpeg -ss {start} -i {media_path} -t {duration} -c:v libx264 -crf 18 -preset fast -c:a aac -b:a 192k -movflags +faststart -y {output}.mp4
 ```
 
 All FFmpeg calls use `asyncio.create_subprocess_exec` to avoid blocking the event loop. stderr is captured for error reporting.
@@ -262,13 +257,13 @@ In production, FastAPI serves the built frontend as static files from `frontend/
 - Jellyfin session fetching and normalization (JSON)
 - Unified session manager with concurrent polling and in-memory cache
 - FFmpeg screenshot extraction (input-level seeking, < 1s)
-- FFmpeg clip extraction with fast (stream copy) and precise (re-encode) modes
+- FFmpeg clip extraction with stream copy
 - Clip extraction runs as a FastAPI `BackgroundTasks` job
 - SQLite capture persistence
 - Full CRUD API for captures (create screenshot, create clip, list, get, download, delete)
 - Thumbnail proxy for both Plex and Jellyfin (no credentials leaked to client)
 - React frontend with Now Playing view (session cards, thumbnails, progress bars, screenshot + clip buttons)
-- Clip form on session cards with duration presets (10s/30s/60s/2m/5m) and precise mode toggle
+- Clip form on session cards with duration presets (10s/30s/60s/2m/5m)
 - React gallery view with download/delete and distinct pending/failed/complete clip states
 - Pending-clip polling (3-second interval, auto-stops when no pending captures)
 - Session polling every 5 seconds

@@ -57,7 +57,6 @@ export const api = {
     relative_seconds?: number;
     start_seconds?: number;
     end_seconds?: number;
-    precise?: boolean;
   }) =>
     request<Capture>("/capture/clip", {
       method: "POST",

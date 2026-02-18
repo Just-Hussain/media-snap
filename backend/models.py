@@ -34,7 +34,6 @@ class ClipRequest(BaseModel):
     relative_seconds: Optional[float] = None
     start_seconds: Optional[float] = None
     end_seconds: Optional[float] = None
-    precise: bool = False  # True = re-encode for frame accuracy
 
 
 class Capture(BaseModel):

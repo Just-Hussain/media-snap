@@ -63,53 +63,32 @@ async def extract_clip(
     start_seconds: float,
     duration_seconds: float,
     output_path: str,
-    precise: bool = False,
 ) -> None:
     """
-    Extract a video clip from a media file.
+    Extract a video clip from a media file using stream copy.
 
-    - precise=False (default): Uses stream copy (-c copy) for near-instant
-      extraction. Cut points snap to nearest keyframes, so timing may be
-      off by a few seconds.
-    - precise=True: Re-encodes with libx264/aac for frame-accurate cuts.
-      Slower but exact.
+    Uses -c copy for near-instant extraction. Cut points snap to nearest
+    keyframes, so timing may be off by a few seconds.
     """
     ts_start = _seconds_to_timecode(start_seconds)
     ts_dur = _seconds_to_timecode(duration_seconds)
 
-    if precise:
-        cmd = [
-            settings.ffmpeg_path,
-            "-ss", ts_start,
-            "-i", media_path,
-            "-t", ts_dur,
-            "-c:v", "libx264",
-            "-crf", "18",
-            "-preset", "fast",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-movflags", "+faststart",
-            "-y",
-            output_path,
-        ]
-    else:
-        cmd = [
-            settings.ffmpeg_path,
-            "-ss", ts_start,
-            "-i", media_path,
-            "-t", ts_dur,
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            "-avoid_negative_ts", "make_zero",
-            "-movflags", "+faststart",
-            "-y",
-            output_path,
-        ]
+    cmd = [
+        settings.ffmpeg_path,
+        "-ss", ts_start,
+        "-i", media_path,
+        "-t", ts_dur,
+        "-c:v", "copy",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-avoid_negative_ts", "make_zero",
+        "-movflags", "+faststart",
+        "-y",
+        output_path,
+    ]
 
     logger.info(
-        "FFmpeg clip (%s): %s @ %s for %s -> %s",
-        "precise" if precise else "fast",
+        "FFmpeg clip: %s @ %s for %s -> %s",
         media_path, ts_start, ts_dur, output_path,
     )
     proc = await asyncio.create_subprocess_exec(
