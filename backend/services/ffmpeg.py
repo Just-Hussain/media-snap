@@ -80,6 +80,7 @@ async def extract_clip(
         "-t", ts_dur,
         "-c:v", "copy",
         "-c:a", "aac",
+        "-ac", "2",
         "-b:a", "192k",
         "-avoid_negative_ts", "make_zero",
         "-movflags", "+faststart",
