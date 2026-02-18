@@ -1,0 +1,27 @@
+services:
+  mediasnap:
+    build: .
+    container_name: mediasnap
+    ports:
+      - "8787:8787"
+    volumes:
+      # Mount the same media library your Plex/Jellyfin use (read-only)
+      - /mnt/user/data/media:/data/media:ro
+      # Persistent storage for captures and database
+      - /mnt/user/appdata/media-snap:/config
+    environment:
+      # ── Plex (leave blank to disable) ──
+      - PLEX_URL=http://172.17.0.1:32400
+      - PLEX_TOKEN=
+      # ── Jellyfin (leave blank to disable) ──
+      # - JELLYFIN_URL=http://localhost:8096
+      # - JELLYFIN_API_KEY=your-jellyfin-api-key-here
+      # ── Storage ──
+      - CAPTURE_DIR=/config/captures
+      - DB_PATH=/config/mediasnap.db
+    restart: unless-stopped
+    networks:
+      - hussnet
+
+networks:
+  hussnet:
